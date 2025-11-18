@@ -1,0 +1,331 @@
+nohup: ignoring input
+2025-11-17 14:32:26,272 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-11-17 14:32:26,272 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,273 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-11-17 14:32:26,273 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,274 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-11-17 14:32:26,274 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,275 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:32:26,275 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`users`
+2025-11-17 14:32:26,275 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,277 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_conversations`
+2025-11-17 14:32:26,277 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,278 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_messages`
+2025-11-17 14:32:26,278 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,279 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`query_resolutions`
+2025-11-17 14:32:26,279 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-17 14:32:26,280 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [131125]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58348 - "GET /health HTTP/1.1" 200 OK
+2025-11-17 14:32:44,436 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:32:44,439 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:32:44,439 INFO sqlalchemy.engine.Engine [generated in 0.00019s] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:32:44,441 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:45100 - "POST /api/auth/register HTTP/1.1" 400 Bad Request
+2025-11-17 14:32:50,945 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:32:50,945 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:32:50,945 INFO sqlalchemy.engine.Engine [cached since 6.507s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:32:51,183 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=now(), last_login=%(last_login)s WHERE users.id = %(users_id)s
+2025-11-17 14:32:51,183 INFO sqlalchemy.engine.Engine [generated in 0.00026s] {'last_login': datetime.datetime(2025, 11, 17, 14, 32, 51, 181824), 'users_id': 1}
+2025-11-17 14:32:51,185 INFO sqlalchemy.engine.Engine COMMIT
+2025-11-17 14:32:51,187 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:32:51,188 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id = %(pk_1)s
+2025-11-17 14:32:51,188 INFO sqlalchemy.engine.Engine [generated in 0.00012s] {'pk_1': 1}
+INFO:     127.0.0.1:45104 - "POST /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:32:51,193 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:34:21,533 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:34:21,534 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:34:21,534 INFO sqlalchemy.engine.Engine [cached since 97.1s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:34:21,539 INFO sqlalchemy.engine.Engine SELECT query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.created_at AS query_resolutions_created_at, users.username AS users_username, users.full_name AS users_full_name, users.department AS users_department 
+FROM query_resolutions INNER JOIN chat_conversations ON query_resolutions.conversation_id = chat_conversations.id INNER JOIN users ON chat_conversations.user_id = users.id 
+WHERE query_resolutions.incident_created = true AND query_resolutions.incident_id IS NOT NULL ORDER BY query_resolutions.created_at DESC
+2025-11-17 14:34:21,539 INFO sqlalchemy.engine.Engine [generated in 0.00035s] {}
+INFO:     127.0.0.1:56174 - "GET /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:34:21,545 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:37:28,907 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:28,907 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:28,907 INFO sqlalchemy.engine.Engine [cached since 284.5s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:29,144 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=now(), last_login=%(last_login)s WHERE users.id = %(users_id)s
+2025-11-17 14:37:29,144 INFO sqlalchemy.engine.Engine [cached since 278s ago] {'last_login': datetime.datetime(2025, 11, 17, 14, 37, 29, 144210), 'users_id': 1}
+2025-11-17 14:37:29,146 INFO sqlalchemy.engine.Engine COMMIT
+2025-11-17 14:37:29,150 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:29,151 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id = %(pk_1)s
+2025-11-17 14:37:29,151 INFO sqlalchemy.engine.Engine [cached since 278s ago] {'pk_1': 1}
+INFO:     127.0.0.1:57444 - "POST /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:37:29,152 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:37:41,695 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:41,695 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:41,695 INFO sqlalchemy.engine.Engine [cached since 297.3s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:41,931 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=now(), last_login=%(last_login)s WHERE users.id = %(users_id)s
+2025-11-17 14:37:41,931 INFO sqlalchemy.engine.Engine [cached since 290.7s ago] {'last_login': datetime.datetime(2025, 11, 17, 14, 37, 41, 930955), 'users_id': 1}
+2025-11-17 14:37:41,933 INFO sqlalchemy.engine.Engine COMMIT
+2025-11-17 14:37:41,936 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:41,936 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id = %(pk_1)s
+2025-11-17 14:37:41,936 INFO sqlalchemy.engine.Engine [cached since 290.7s ago] {'pk_1': 1}
+INFO:     127.0.0.1:35104 - "POST /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:37:41,937 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:37:41,948 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:41,948 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:41,948 INFO sqlalchemy.engine.Engine [cached since 297.5s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:41,950 INFO sqlalchemy.engine.Engine SELECT query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.created_at AS query_resolutions_created_at, users.username AS users_username, users.full_name AS users_full_name, users.department AS users_department 
+FROM query_resolutions INNER JOIN chat_conversations ON query_resolutions.conversation_id = chat_conversations.id INNER JOIN users ON chat_conversations.user_id = users.id 
+WHERE query_resolutions.incident_created = true AND query_resolutions.incident_id IS NOT NULL ORDER BY query_resolutions.created_at DESC
+2025-11-17 14:37:41,950 INFO sqlalchemy.engine.Engine [cached since 200.4s ago] {}
+INFO:     127.0.0.1:35110 - "GET /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:37:41,952 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     106.213.80.171:13506 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:37:54,627 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:54,628 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:54,628 INFO sqlalchemy.engine.Engine [cached since 310.2s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:54,866 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=now(), last_login=%(last_login)s WHERE users.id = %(users_id)s
+2025-11-17 14:37:54,867 INFO sqlalchemy.engine.Engine [cached since 303.7s ago] {'last_login': datetime.datetime(2025, 11, 17, 14, 37, 54, 866423), 'users_id': 1}
+2025-11-17 14:37:54,868 INFO sqlalchemy.engine.Engine COMMIT
+2025-11-17 14:37:54,871 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:54,872 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id = %(pk_1)s
+2025-11-17 14:37:54,872 INFO sqlalchemy.engine.Engine [cached since 303.7s ago] {'pk_1': 1}
+INFO:     106.213.80.171:13506 - "POST /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:37:54,874 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     106.213.80.171:13506 - "OPTIONS /api/chat/conversations HTTP/1.1" 200 OK
+2025-11-17 14:37:54,953 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:54,953 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:54,953 INFO sqlalchemy.engine.Engine [cached since 310.5s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:54,956 INFO sqlalchemy.engine.Engine SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.user_id = %(user_id_1)s ORDER BY chat_conversations.updated_at DESC
+2025-11-17 14:37:54,956 INFO sqlalchemy.engine.Engine [generated in 0.00026s] {'user_id_1': 1}
+2025-11-17 14:37:54,963 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,964 INFO sqlalchemy.engine.Engine [generated in 0.00026s] {'conversation_id_1': 33}
+2025-11-17 14:37:54,965 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,965 INFO sqlalchemy.engine.Engine [cached since 0.002008s ago] {'conversation_id_1': 32}
+2025-11-17 14:37:54,966 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,966 INFO sqlalchemy.engine.Engine [cached since 0.003017s ago] {'conversation_id_1': 30}
+2025-11-17 14:37:54,967 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,967 INFO sqlalchemy.engine.Engine [cached since 0.00401s ago] {'conversation_id_1': 27}
+2025-11-17 14:37:54,968 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,968 INFO sqlalchemy.engine.Engine [cached since 0.004933s ago] {'conversation_id_1': 26}
+2025-11-17 14:37:54,969 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,969 INFO sqlalchemy.engine.Engine [cached since 0.005852s ago] {'conversation_id_1': 25}
+2025-11-17 14:37:54,970 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_messages.id AS chat_messages_id, chat_messages.conversation_id AS chat_messages_conversation_id, chat_messages.sender_type AS chat_messages_sender_type, chat_messages.message_content AS chat_messages_message_content, chat_messages.message_metadata AS chat_messages_message_metadata, chat_messages.timestamp AS chat_messages_timestamp 
+FROM chat_messages 
+WHERE chat_messages.conversation_id = %(conversation_id_1)s) AS anon_1
+2025-11-17 14:37:54,970 INFO sqlalchemy.engine.Engine [cached since 0.00666s ago] {'conversation_id_1': 24}
+INFO:     106.213.80.171:13506 - "GET /api/chat/conversations HTTP/1.1" 200 OK
+2025-11-17 14:37:54,973 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     106.213.80.171:13506 - "OPTIONS /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:37:58,487 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:37:58,487 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:37:58,487 INFO sqlalchemy.engine.Engine [cached since 314s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:37:58,489 INFO sqlalchemy.engine.Engine SELECT query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.created_at AS query_resolutions_created_at, users.username AS users_username, users.full_name AS users_full_name, users.department AS users_department 
+FROM query_resolutions INNER JOIN chat_conversations ON query_resolutions.conversation_id = chat_conversations.id INNER JOIN users ON chat_conversations.user_id = users.id 
+WHERE query_resolutions.incident_created = true AND query_resolutions.incident_id IS NOT NULL ORDER BY query_resolutions.created_at DESC
+2025-11-17 14:37:58,489 INFO sqlalchemy.engine.Engine [cached since 217s ago] {}
+INFO:     106.213.80.171:13506 - "GET /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:37:58,490 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:38:09,909 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:09,910 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:09,910 INFO sqlalchemy.engine.Engine [cached since 325.5s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:38:09,912 INFO sqlalchemy.engine.Engine SELECT query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.created_at AS query_resolutions_created_at, users.username AS users_username, users.full_name AS users_full_name, users.department AS users_department 
+FROM query_resolutions INNER JOIN chat_conversations ON query_resolutions.conversation_id = chat_conversations.id INNER JOIN users ON chat_conversations.user_id = users.id 
+WHERE query_resolutions.incident_created = true AND query_resolutions.incident_id IS NOT NULL ORDER BY query_resolutions.created_at DESC
+2025-11-17 14:38:09,912 INFO sqlalchemy.engine.Engine [cached since 228.4s ago] {}
+INFO:     106.213.80.171:24189 - "GET /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:38:09,914 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:38:15,600 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:15,601 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:15,601 INFO sqlalchemy.engine.Engine [cached since 331.2s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:38:15,837 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=now(), last_login=%(last_login)s WHERE users.id = %(users_id)s
+2025-11-17 14:38:15,837 INFO sqlalchemy.engine.Engine [cached since 324.7s ago] {'last_login': datetime.datetime(2025, 11, 17, 14, 38, 15, 836568), 'users_id': 1}
+2025-11-17 14:38:15,838 INFO sqlalchemy.engine.Engine COMMIT
+2025-11-17 14:38:15,841 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:15,842 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id = %(pk_1)s
+2025-11-17 14:38:15,842 INFO sqlalchemy.engine.Engine [cached since 324.7s ago] {'pk_1': 1}
+INFO:     127.0.0.1:53050 - "POST /api/auth/login HTTP/1.1" 200 OK
+2025-11-17 14:38:15,843 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:40932 - "GET /health HTTP/1.1" 200 OK
+INFO:     106.213.80.171:19915 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+2025-11-17 14:38:34,345 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:34,346 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:34,346 INFO sqlalchemy.engine.Engine [cached since 349.9s ago] {'username_1': 'admin', 'param_1': 1}
+INFO:     106.213.80.171:19915 - "GET /api/auth/me HTTP/1.1" 200 OK
+2025-11-17 14:38:34,348 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:38:34,382 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:34,383 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:34,383 INFO sqlalchemy.engine.Engine [cached since 349.9s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:38:34,385 INFO sqlalchemy.engine.Engine SELECT query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.created_at AS query_resolutions_created_at, users.username AS users_username, users.full_name AS users_full_name, users.department AS users_department 
+FROM query_resolutions INNER JOIN chat_conversations ON query_resolutions.conversation_id = chat_conversations.id INNER JOIN users ON chat_conversations.user_id = users.id 
+WHERE query_resolutions.incident_created = true AND query_resolutions.incident_id IS NOT NULL ORDER BY query_resolutions.created_at DESC
+2025-11-17 14:38:34,385 INFO sqlalchemy.engine.Engine [cached since 252.8s ago] {}
+INFO:     106.213.80.171:19915 - "GET /api/admin/incidents HTTP/1.1" 200 OK
+2025-11-17 14:38:34,387 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     106.213.80.171:19915 - "OPTIONS /api/admin/dashboard HTTP/1.1" 200 OK
+INFO:     106.213.80.171:30134 - "OPTIONS /api/admin/users HTTP/1.1" 200 OK
+2025-11-17 14:38:35,851 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:35,852 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:35,852 INFO sqlalchemy.engine.Engine [cached since 351.4s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:38:35,856 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users) AS anon_1
+2025-11-17 14:38:35,857 INFO sqlalchemy.engine.Engine [generated in 0.00031s] {}
+2025-11-17 14:38:35,859 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations) AS anon_1
+2025-11-17 14:38:35,860 INFO sqlalchemy.engine.Engine [generated in 0.00022s] {}
+2025-11-17 14:38:35,863 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions 
+WHERE query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,863 INFO sqlalchemy.engine.Engine [generated in 0.00018s] {}
+2025-11-17 14:38:35,866 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.status = %(status_1)s) AS anon_1
+2025-11-17 14:38:35,866 INFO sqlalchemy.engine.Engine [generated in 0.00020s] {'status_1': 'active'}
+2025-11-17 14:38:35,869 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE date(chat_conversations.created_at) = %(date_1)s) AS anon_1
+2025-11-17 14:38:35,869 INFO sqlalchemy.engine.Engine [generated in 0.00016s] {'date_1': datetime.date(2025, 11, 17)}
+2025-11-17 14:38:35,871 INFO sqlalchemy.engine.Engine SELECT query_resolutions.query_type AS query_resolutions_query_type, count(query_resolutions.id) AS count 
+FROM query_resolutions GROUP BY query_resolutions.query_type ORDER BY count DESC 
+ LIMIT %(param_1)s
+2025-11-17 14:38:35,872 INFO sqlalchemy.engine.Engine [generated in 0.00017s] {'param_1': 5}
+2025-11-17 14:38:35,875 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions) AS anon_1
+2025-11-17 14:38:35,875 INFO sqlalchemy.engine.Engine [generated in 0.00013s] {}
+2025-11-17 14:38:35,876 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions 
+WHERE query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,876 INFO sqlalchemy.engine.Engine [cached since 0.01361s ago] {}
+INFO:     106.213.80.171:19915 - "GET /api/admin/dashboard HTTP/1.1" 200 OK
+2025-11-17 14:38:35,878 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-11-17 14:38:35,882 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-17 14:38:35,883 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s
+2025-11-17 14:38:35,883 INFO sqlalchemy.engine.Engine [cached since 351.4s ago] {'username_1': 'admin', 'param_1': 1}
+2025-11-17 14:38:35,885 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.department AS users_department, users.`role` AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users
+2025-11-17 14:38:35,885 INFO sqlalchemy.engine.Engine [generated in 0.00024s] {}
+2025-11-17 14:38:35,888 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.user_id = %(user_id_1)s) AS anon_1
+2025-11-17 14:38:35,888 INFO sqlalchemy.engine.Engine [generated in 0.00016s] {'user_id_1': 1}
+2025-11-17 14:38:35,891 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions INNER JOIN chat_conversations ON chat_conversations.id = query_resolutions.conversation_id 
+WHERE chat_conversations.user_id = %(user_id_1)s AND query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,891 INFO sqlalchemy.engine.Engine [generated in 0.00013s] {'user_id_1': 1}
+2025-11-17 14:38:35,893 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.user_id = %(user_id_1)s) AS anon_1
+2025-11-17 14:38:35,893 INFO sqlalchemy.engine.Engine [cached since 0.005221s ago] {'user_id_1': 2}
+2025-11-17 14:38:35,894 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions INNER JOIN chat_conversations ON chat_conversations.id = query_resolutions.conversation_id 
+WHERE chat_conversations.user_id = %(user_id_1)s AND query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,894 INFO sqlalchemy.engine.Engine [cached since 0.003321s ago] {'user_id_1': 2}
+2025-11-17 14:38:35,895 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.user_id = %(user_id_1)s) AS anon_1
+2025-11-17 14:38:35,895 INFO sqlalchemy.engine.Engine [cached since 0.00707s ago] {'user_id_1': 3}
+2025-11-17 14:38:35,896 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions INNER JOIN chat_conversations ON chat_conversations.id = query_resolutions.conversation_id 
+WHERE chat_conversations.user_id = %(user_id_1)s AND query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,896 INFO sqlalchemy.engine.Engine [cached since 0.004835s ago] {'user_id_1': 3}
+2025-11-17 14:38:35,896 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT chat_conversations.id AS chat_conversations_id, chat_conversations.user_id AS chat_conversations_user_id, chat_conversations.title AS chat_conversations_title, chat_conversations.status AS chat_conversations_status, chat_conversations.priority AS chat_conversations_priority, chat_conversations.created_at AS chat_conversations_created_at, chat_conversations.updated_at AS chat_conversations_updated_at, chat_conversations.resolved_at AS chat_conversations_resolved_at 
+FROM chat_conversations 
+WHERE chat_conversations.user_id = %(user_id_1)s) AS anon_1
+2025-11-17 14:38:35,896 INFO sqlalchemy.engine.Engine [cached since 0.008579s ago] {'user_id_1': 5}
+2025-11-17 14:38:35,897 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT query_resolutions.id AS query_resolutions_id, query_resolutions.conversation_id AS query_resolutions_conversation_id, query_resolutions.query_type AS query_resolutions_query_type, query_resolutions.server_name AS query_resolutions_server_name, query_resolutions.correlation_id AS query_resolutions_correlation_id, query_resolutions.root_cause AS query_resolutions_root_cause, query_resolutions.resolution_steps AS query_resolutions_resolution_steps, query_resolutions.data_sources_used AS query_resolutions_data_sources_used, query_resolutions.incident_created AS query_resolutions_incident_created, query_resolutions.incident_id AS query_resolutions_incident_id, query_resolutions.resolved_automatically AS query_resolutions_resolved_automatically, query_resolutions.created_at AS query_resolutions_created_at 
+FROM query_resolutions INNER JOIN chat_conversations ON chat_conversations.id = query_resolutions.conversation_id 
+WHERE chat_conversations.user_id = %(user_id_1)s AND query_resolutions.resolved_automatically = true) AS anon_1
+2025-11-17 14:38:35,897 INFO sqlalchemy.engine.Engine [cached since 0.006395s ago] {'user_id_1': 5}
+INFO:     106.213.80.171:30134 - "GET /api/admin/users HTTP/1.1" 200 OK
+2025-11-17 14:38:35,898 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [131125]

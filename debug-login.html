@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HSBC Login Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .debug { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { background: #DB0011; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔍 HSBC AutoAssist Login Debug Tool</h2>
+        
+        <div>
+            <input type="text" id="username" placeholder="Username" value="admin">
+            <input type="password" id="password" placeholder="Password" value="admin123">
+            <button onclick="testDirectLogin()">Test Direct Login</button>
+            <button onclick="testAxiosLogin()">Test Axios Login (Like Frontend)</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `debug ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        async function testDirectLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('🧪 Testing Direct Fetch Login...', 'info');
+            log(`Username: "${username}", Password: "${password}"`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                log(`Response Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const data = await response.json();
+                if (response.ok) {
+                    log(`✅ SUCCESS: ${data.user_info.full_name} logged in`, 'success');
+                    log(`Token: ${data.access_token.substring(0, 50)}...`, 'success');
+                } else {
+                    log(`❌ FAILED: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                log(`🔌 NETWORK ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAxiosLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('🧪 Testing Axios Login (Same as Frontend)...', 'info');
+            
+            try {
+                // Create axios instance like the frontend
+                const api = axios.create({
+                    baseURL: API_BASE,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('Making axios request...', 'info');
+                const response = await api.post('/api/auth/login', {
+                    username,
+                    password
+                });
+                
+                log(`✅ AXIOS SUCCESS: Status ${response.status}`, 'success');
+                log(`User: ${response.data.user_info.full_name}`, 'success');
+                log(`Token: ${response.data.access_token.substring(0, 50)}...`, 'success');
+                
+                // Test what the frontend AuthContext would do
+                localStorage.setItem('token', response.data.access_token);
+                log('✅ Token saved to localStorage (like frontend)', 'success');
+                
+            } catch (error) {
+                log(`❌ AXIOS ERROR: ${error.message}`, 'error');
+                if (error.response) {
+                    log(`Status: ${error.response.status}`, 'error');
+                    log(`Data: ${JSON.stringify(error.response.data)}`, 'error');
+                }
+            }
+        }
+        
+        // Test connectivity on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                log(`🟢 Backend Connected: ${data.message}`, 'success');
+            } catch (error) {
+                log(`🔴 Backend Connection Failed: ${error.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

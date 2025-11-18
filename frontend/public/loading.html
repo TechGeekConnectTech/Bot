@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSBC AutoAssist - Loading</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 500px;
+        }
+        .logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        .title {
+            color: #DB0011;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        .status {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #4caf50;
+            margin-bottom: 1rem;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #DB0011;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .endpoints {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .endpoint {
+            margin-bottom: 0.5rem;
+        }
+        .endpoint strong {
+            color: #DB0011;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <svg class="logo" viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="100" height="50" fill="#DB0011"/>
+            <text x="50" y="25" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="14">HSBC</text>
+        </svg>
+        
+        <div class="title">HSBC AutoAssist</div>
+        <div class="subtitle">DC Automation Support Team Chatbot</div>
+        
+        <div class="status">
+            <div class="loading"></div>
+            <strong>System Status:</strong> Starting up...
+        </div>
+        
+        <div class="endpoints">
+            <div class="endpoint">
+                <strong>Backend API:</strong> <span id="backend-status">Checking...</span>
+            </div>
+            <div class="endpoint">
+                <strong>Database:</strong> <span id="db-status">Checking...</span>
+            </div>
+            <div class="endpoint">
+                <strong>Frontend:</strong> <span id="frontend-status">Loading...</span>
+            </div>
+        </div>
+        
+        <p style="margin-top: 2rem; color: #666; font-size: 0.9rem;">
+            The React application is being prepared. This may take a few moments.
+        </p>
+    </div>
+
+    <script>
+        // Check backend status
+        fetch('http://localhost:8000/')
+            .then(response => response.ok ? 'Running ✅' : 'Error ❌')
+            .catch(() => 'Offline ❌')
+            .then(status => {
+                document.getElementById('backend-status').textContent = status;
+            });
+        
+        // Check if we can reach the API docs
+        fetch('http://localhost:8000/docs')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('db-status').textContent = 'Connected ✅';
+                }
+            })
+            .catch(() => {
+                document.getElementById('db-status').textContent = 'Checking... ⏳';
+            });
+        
+        // Update frontend status
+        setTimeout(() => {
+            document.getElementById('frontend-status').textContent = 'Ready ✅';
+        }, 2000);
+        
+        // Redirect to React app when ready (if available)
+        setTimeout(() => {
+            window.location.href = '/app';
+        }, 5000);
+    </script>
+</body>
+</html>

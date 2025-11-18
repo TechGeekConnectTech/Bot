@@ -1,0 +1,25 @@
+2025-11-16 13:25:18,355 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-11-16 13:25:18,355 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,356 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-11-16 13:25:18,356 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,356 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-11-16 13:25:18,356 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,357 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-16 13:25:18,357 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`users`
+2025-11-16 13:25:18,357 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,366 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_conversations`
+2025-11-16 13:25:18,366 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,369 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_messages`
+2025-11-16 13:25:18,369 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,370 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`query_resolutions`
+2025-11-16 13:25:18,370 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-16 13:25:18,371 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [44344]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     77.37.45.138:36056 - "GET /docs HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44344]

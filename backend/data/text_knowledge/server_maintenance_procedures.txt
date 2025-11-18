@@ -1,0 +1,25 @@
+Server Maintenance Procedures
+
+Load Balancer (srv-lb-01):
+- Check connection pool status
+- Monitor CPU and memory usage
+- Verify upstream server health
+- Check logs for connection errors
+
+Database Servers (srv-db-01, srv-db-02):
+- Monitor connection counts
+- Check for deadlocks
+- Verify replication status
+- Review slow query logs
+
+Web Servers (srv-web-01, srv-web-02):
+- Check application logs
+- Monitor response times
+- Verify SSL certificates
+- Review access logs
+
+Cache Servers (srv-cache-01):
+- Monitor memory usage
+- Check cache hit rates
+- Verify cache expiration policies
+- Review eviction logs

@@ -1,0 +1,14 @@
+server_name,issue_type,error_code,description,resolution_steps,username,reported_date,status,priority,correlation_id
+srv-api-01,auth_issue,401,JWT token expired error,"Check token expiration time | Regenerate API token | Update authentication headers | Retry request",admin,2024-11-15,resolved,medium,CID001
+srv-api-02,payload_issue,400,Invalid JSON format in request,"Validate JSON syntax | Check required fields | Verify data types | Test with minimal payload",john.doe,2024-11-15,open,high,CID002
+srv-db-01,performance_issue,504,Database connection timeout,"Check database connection pool | Monitor query performance | Review connection limits | Restart database service",admin,2024-11-14,resolved,critical,CID003
+srv-web-01,configuration_issue,502,Nginx configuration error,"Check nginx configuration syntax | Verify upstream servers | Reload nginx configuration | Check error logs",jane.smith,2024-11-16,open,medium,CID004
+srv-api-03,resource_lock,423,Resource locked by concurrent operation,"Check running processes | Kill blocking processes | Clear resource locks | Retry operation",admin,2024-11-16,resolved,low,CID005
+srv-cache-01,auth_issue,403,Redis authentication failed,"Check Redis password | Verify connection string | Test Redis connectivity | Update configuration",mike.wilson,2024-11-15,open,medium,CID006
+srv-api-04,payload_issue,422,Validation error in user data,"Check input validation rules | Verify required fields | Test with valid sample data | Update validation logic",sarah.jones,2024-11-16,resolved,low,CID007
+srv-lb-01,performance_issue,503,Load balancer health check failure,"Check backend server status | Verify health check endpoints | Review load balancer logs | Restart failed services",admin,2024-11-14,resolved,high,CID008
+srv-mon-01,configuration_issue,500,Monitoring service configuration error,"Check monitoring configuration | Verify metric collection | Test alerting rules | Restart monitoring service",tom.brown,2024-11-16,open,medium,CID009
+srv-api-05,auth_issue,401,API key not found in request headers,"Check API key format | Verify header name | Test with valid API key | Update client configuration",lisa.davis,2024-11-15,resolved,medium,CID010
+Unknown,configuration_issue,N/A,how to install python,"1. Verify configuration files
+2. Check environment variables
+3. Test connectivity

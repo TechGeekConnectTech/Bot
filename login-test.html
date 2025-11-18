@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HSBC AutoAssist - Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .logo { color: #DB0011; font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        form { margin: 20px 0; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background: #DB0011; color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #B8000E; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">HSBC AutoAssist - Login Test</div>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" value="admin" required>
+            <input type="password" id="password" placeholder="Password" value="admin123" required>
+            <button type="submit">Test Login</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <div class="info">
+            <strong>Test Credentials:</strong><br>
+            Admin: admin / admin123<br>
+            Support: support_user / support123
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<div class="info">Testing login...</div>';
+            
+            try {
+                console.log('Sending login request to:', `${API_BASE}/api/auth/login`);
+                console.log('Credentials:', { username, password: '***' });
+                
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Login Successful!</strong><br>
+                            User: ${data.user_info.full_name}<br>
+                            Role: ${data.user_info.role}<br>
+                            Token: ${data.access_token.substring(0, 50)}...
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Login Failed</strong><br>
+                            Status: ${response.status}<br>
+                            Error: ${data.detail || JSON.stringify(data)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Network Error</strong><br>
+                        ${error.message}<br>
+                        Check if backend is running on ${API_BASE}
+                    </div>
+                `;
+            }
+        });
+        
+        // Test backend connectivity on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                console.log('Backend connectivity test:', data);
+            } catch (error) {
+                console.error('Backend connectivity failed:', error);
+                document.getElementById('result').innerHTML = `
+                    <div class="error">
+                        <strong>⚠️ Backend Connectivity Issue</strong><br>
+                        Cannot connect to ${API_BASE}<br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
