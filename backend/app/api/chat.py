@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
@@ -10,6 +10,13 @@ from app.models.chat import ChatConversation, ChatMessage, QueryResolution, Reso
 from app.api.auth import get_current_user
 from app.services.gpt_service import GPTService
 from app.services.api_integrations import SplunkService, AnsibleService
+from app.core.logging_config import get_user_logger, get_chat_logger, get_api_logger
+import logging
+
+logger = logging.getLogger(__name__)
+user_logger = get_user_logger()
+chat_logger = get_chat_logger()
+api_logger = get_api_logger()
 
 router = APIRouter()
 
@@ -116,8 +123,15 @@ class IncidentListResponse(BaseModel):
 async def send_message(
     message_data: MessageCreate,
     current_user: User = Depends(get_current_user),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
+    client_ip = request.client.host if request else "unknown"
+    
+    # Log user activity
+    user_logger.info(f"Message received - User: {current_user.full_name} ({current_user.username}), Category: {message_data.category}, Server: {message_data.server_name}, IP: {client_ip}")
+    chat_logger.info(f"User message - [{current_user.username}] Category: {message_data.category or 'None'} | Message: {message_data.message[:200]}{'...' if len(message_data.message) > 200 else ''}")
+    
     # Create or get conversation
     if message_data.conversation_id:
         conversation = db.query(ChatConversation).filter(
@@ -125,7 +139,9 @@ async def send_message(
             ChatConversation.user_id == current_user.id
         ).first()
         if not conversation:
+            chat_logger.warning(f"Conversation not found - User: {current_user.username}, Conversation ID: {message_data.conversation_id}")
             raise HTTPException(status_code=404, detail="Conversation not found")
+        chat_logger.info(f"Using existing conversation - ID: {conversation.id}, User: {current_user.username}")
     else:
         # Create new conversation
         conversation = ChatConversation(
@@ -135,6 +151,7 @@ async def send_message(
         db.add(conversation)
         db.commit()
         db.refresh(conversation)
+        chat_logger.info(f"New conversation created - ID: {conversation.id}, User: {current_user.username}, Title: {conversation.title}")
     
     # Save user message
     user_message = ChatMessage(
@@ -150,7 +167,10 @@ async def send_message(
     db.add(user_message)
     db.commit()
     
+    chat_logger.info(f"User message saved - ID: {user_message.id}, Conversation: {conversation.id}, Length: {len(message_data.message)} chars")
+    
     # Process message with AI and external APIs
+    logger.info(f"Starting AI processing - User: {current_user.username}, Category: {message_data.category}, Message length: {len(message_data.message)}")
     gpt_service = GPTService()
     response_data = await gpt_service.process_user_query(
         message=message_data.message,
@@ -197,6 +217,14 @@ async def send_message(
     conversation.updated_at = datetime.utcnow()
     db.commit()
     
+    # Log bot response
+    ai_service = response_data.get("ai_service_used", "unknown")
+    response_length = len(response_data["message"])
+    incident_required = response_data.get("incident_required", False)
+    
+    chat_logger.info(f"Bot response generated - ID: {bot_message.id}, User: {current_user.username}, AI Service: {ai_service}, Length: {response_length} chars, Incident Required: {incident_required}")
+    user_logger.info(f"Query processed - User: {current_user.full_name}, Category: {message_data.category}, AI Service: {ai_service}, Response Length: {response_length}")
+    
     return ChatResponse(
         message=response_data["message"],
         conversation_id=conversation.id,
@@ -216,11 +244,16 @@ async def send_message(
 @router.get("/conversations", response_model=List[ConversationResponse])
 async def get_user_conversations(
     current_user: User = Depends(get_current_user),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
+    client_ip = request.client.host if request else "unknown"
+    
     conversations = db.query(ChatConversation).filter(
         ChatConversation.user_id == current_user.id
     ).order_by(ChatConversation.updated_at.desc()).all()
+    
+    api_logger.info(f"Conversations accessed - User: {current_user.username}, Count: {len(conversations)}, IP: {client_ip}")
     
     result = []
     for conv in conversations:
@@ -601,14 +634,17 @@ async def get_incident_details_admin(
 async def submit_resolution_feedback(
     feedback_data: ResolutionFeedbackCreate,
     current_user: User = Depends(get_current_user),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
     """
     Submit feedback on whether a bot response resolved the user's query
     """
-    # Add debug logging
-    print(f"🔍 Resolution feedback received: conversation_id={feedback_data.conversation_id}, message_id={feedback_data.message_id}, user_id={current_user.id}")
-    print(f"📝 Feedback data: was_resolved={feedback_data.was_resolved}, rating={feedback_data.resolution_rating}")
+    client_ip = request.client.host if request else "unknown"
+    
+    # Log feedback submission
+    user_logger.info(f"Resolution feedback submitted - User: {current_user.full_name} ({current_user.username}), Conversation: {feedback_data.conversation_id}, Message: {feedback_data.message_id}, Resolved: {feedback_data.was_resolved}, Rating: {feedback_data.resolution_rating}, IP: {client_ip}")
+    chat_logger.info(f"Feedback received - [{current_user.username}] Conv: {feedback_data.conversation_id}, Msg: {feedback_data.message_id}, Resolved: {feedback_data.was_resolved}, Rating: {feedback_data.resolution_rating or 'None'}")
     
     # Log the current user
     print(f"👤 Current user: {current_user.username} (ID: {current_user.id})")
@@ -693,6 +729,9 @@ async def submit_resolution_feedback(
         conversation.status = "resolved"
         conversation.resolved_at = datetime.utcnow()
         db.commit()
+    
+    # Log successful feedback processing
+    logger.info(f"Resolution feedback processed successfully - Feedback ID: {feedback_obj.id}, User: {current_user.username}, Category: {feedback_obj.category}, Resolved: {feedback_obj.was_resolved}")
     
     return ResolutionFeedbackResponse(
         id=feedback_obj.id,

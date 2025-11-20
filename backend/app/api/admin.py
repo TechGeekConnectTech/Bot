@@ -1,14 +1,20 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from pydantic import BaseModel
 from datetime import datetime, timedelta
+import logging
 
 from app.core.database import get_db
 from app.models.user import User
 from app.models.chat import ChatConversation, ChatMessage, QueryResolution, ResolutionFeedback
 from app.api.auth import get_current_user, get_admin_user
+from app.core.logging_config import get_user_logger, get_api_logger
+
+logger = logging.getLogger(__name__)
+user_logger = get_user_logger()
+api_logger = get_api_logger()
 
 router = APIRouter()
 
@@ -63,8 +69,15 @@ def require_admin_user(current_user: User = Depends(get_current_user)):
 @router.get("/dashboard", response_model=DashboardStats)
 async def get_dashboard_stats(
     admin_user: User = Depends(require_admin_user),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
+    client_ip = request.client.host if request else "unknown"
+    
+    # Log admin dashboard access
+    user_logger.info(f"Admin dashboard accessed - Admin: {admin_user.full_name} ({admin_user.username}), Department: {admin_user.department}, IP: {client_ip}")
+    api_logger.info(f"Dashboard stats requested - Admin: {admin_user.username}")
+    
     today = datetime.utcnow().date()
     
     # Basic counts

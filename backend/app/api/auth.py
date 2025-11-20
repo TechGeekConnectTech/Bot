@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -11,6 +11,12 @@ import bcrypt
 from app.core.database import get_db
 from app.core.config import settings
 from app.models.user import User
+from app.core.logging_config import get_auth_logger, get_user_logger
+import logging
+
+logger = logging.getLogger(__name__)
+auth_logger = get_auth_logger()
+user_logger = get_user_logger()
 
 router = APIRouter()
 security = HTTPBearer()
@@ -101,13 +107,19 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
+            auth_logger.warning("Token validation failed - No username in token payload")
             raise credentials_exception
-    except JWTError:
+    except JWTError as e:
+        auth_logger.warning(f"Token validation failed - JWT error: {str(e)}")
         raise credentials_exception
     
     user = db.query(User).filter(User.username == username).first()
     if user is None:
+        auth_logger.warning(f"Token validation failed - User not found: {username}")
         raise credentials_exception
+    
+    # Log successful token validation (less frequent to avoid log spam)
+    logger.debug(f"Token validated successfully for user: {username}")
     return user
 
 def get_admin_user(current_user: User = Depends(get_current_user)):
@@ -144,9 +156,23 @@ async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 @router.post("/login", response_model=Token)
-async def login_user(user_data: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == user_data.username).first()
-    if not user or not verify_password(user_data.password, user.hashed_password):
+async def login_user(user_data: UserLogin, request: Request = None, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request else "unknown"
+    username = user_data.username
+    
+    auth_logger.info(f"Login attempt - Username: {username}, IP: {client_ip}")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        auth_logger.warning(f"Failed login - User not found: {username}, IP: {client_ip}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if not verify_password(user_data.password, user.hashed_password):
+        auth_logger.warning(f"Failed login - Invalid password: {username}, IP: {client_ip}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -156,6 +182,9 @@ async def login_user(user_data: UserLogin, db: Session = Depends(get_db)):
     # Update last login
     user.last_login = datetime.utcnow()
     db.commit()
+    
+    auth_logger.info(f"Successful login - User: {user.full_name} ({username}), Role: {user.role}, Department: {user.department}, IP: {client_ip}")
+    user_logger.info(f"User session started - {user.full_name} ({username}) logged in from {client_ip}")
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

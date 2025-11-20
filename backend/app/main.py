@@ -3,14 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 import uvicorn
 from app.core.config import settings
+from app.core.logging_config import setup_logging
+import logging
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.admin import router as admin_router
 from app.api.knowledge import router as knowledge_router
 from app.core.database import engine, Base
 
+# Setup logging system
+setup_logging()
+logger = logging.getLogger(__name__)
+
 # Create database tables
 Base.metadata.create_all(bind=engine)
+logger.info("Database tables created successfully")
 
 app = FastAPI(
     title="DC AutoAssist API",
@@ -19,6 +26,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+logger.info("HSBC AutoAssist API initialized")
 
 # Configure CORS - Allow server IP and localhost
 app.add_middleware(
@@ -42,6 +51,12 @@ app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat & Incidents"])  # Includes both chat and incident routes
 app.include_router(admin_router, prefix="/api/admin", tags=["Administration"])
 app.include_router(knowledge_router, tags=["Knowledge Management"])
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("HSBC AutoAssist API starting up...")
+    logger.info(f"CORS origins configured: {[origin for origin in app.user_middleware if hasattr(origin, 'allow_origins')]}")
+    logger.info("API is ready to serve requests")
 
 @app.get("/")
 async def root():
