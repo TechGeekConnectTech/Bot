@@ -50,3 +50,29 @@ class QueryResolution(Base):
     
     # Relationships
     conversation = relationship("ChatConversation")
+
+class ResolutionFeedback(Base):
+    __tablename__ = "resolution_feedback"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("chat_conversations.id"), nullable=False)
+    message_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=False)  # The bot response being rated
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Resolution feedback
+    was_resolved = Column(Boolean, nullable=False)  # True if user clicked "Yes, resolved"
+    resolution_rating = Column(Integer, nullable=True)  # 1-5 star rating (optional)
+    feedback_comment = Column(Text, nullable=True)  # Optional user comment
+    
+    # Metadata
+    response_time = Column(Integer, nullable=True)  # Time from bot response to user feedback (seconds)
+    category = Column(String(50), nullable=True)  # general, hsbc_internal, monitoring, knowledge_base
+    ai_service_used = Column(String(50), nullable=True)  # openai, ollama, fallback
+    
+    # Timestamps
+    created_at = Column(DateTime, server_default=func.now())
+    
+    # Relationships
+    conversation = relationship("ChatConversation")
+    message = relationship("ChatMessage")
+    user = relationship("User")

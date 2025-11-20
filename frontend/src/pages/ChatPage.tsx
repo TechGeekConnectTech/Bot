@@ -25,6 +25,7 @@ import {
   ListItem,
   ListItemText
 } from '@mui/material';
+import ResolutionFeedback from '../components/ResolutionFeedback';
 import {
   Send as SendIcon,
   SmartToy as BotIcon,
@@ -162,7 +163,7 @@ const ChatPage: React.FC = () => {
       setCurrentConversationId(response.conversation_id);
       
       const botMessage: ChatMessage = {
-        id: Date.now() + 1,
+        id: response.message_id || Date.now() + 1, // Use backend message ID for feedback tracking
         conversation_id: response.conversation_id,
         sender_type: 'bot',
         message_content: response.message,
@@ -460,6 +461,20 @@ Your issue has been escalated to the support team. You will receive updates via 
             {new Date(message.timestamp).toLocaleTimeString()}
           </Typography>
         </Paper>
+        
+        {/* Add Resolution Feedback for bot messages */}
+        {!isUser && !isSystem && message.id && (
+          <Box sx={{ width: '70%', ml: !isUser ? 5 : 0 }}>
+            <ResolutionFeedback
+              conversationId={message.conversation_id}
+              messageId={message.id}
+              onFeedbackSubmitted={(wasResolved) => {
+                // Optional: Update message state or show notification
+                console.log('Feedback submitted:', wasResolved);
+              }}
+            />
+          </Box>
+        )}
         
         {isUser && (
           <Avatar

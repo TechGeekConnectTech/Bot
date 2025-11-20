@@ -15,7 +15,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Button,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
   TrendingUp,
@@ -23,7 +26,10 @@ import {
   Chat,
   CheckCircle,
   Warning,
-  Schedule
+  Schedule,
+  Refresh,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
 import { DashboardStats, UserStats } from '../types';
@@ -35,26 +41,42 @@ const DashboardPage: React.FC = () => {
   const [userStats, setUserStats] = useState<UserStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(5);
+  const [hasMoreUsers, setHasMoreUsers] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    fetchDashboardData(currentPage);
+  }, [currentPage]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (page: number = 1) => {
     try {
       setLoading(true);
       const [dashboardData, usersData] = await Promise.all([
         apiService.getDashboardStats(),
-        apiService.getUserStatistics()
+        apiService.getUserStatistics(page, usersPerPage)
       ]);
       
       setStats(dashboardData);
       setUserStats(usersData);
+      setHasMoreUsers(usersData.length === usersPerPage);
     } catch (err: any) {
       setError('Failed to load dashboard data');
       console.error('Dashboard error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasMoreUsers) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -108,20 +130,38 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Box sx={{ p: 3, height: '100%', overflow: 'auto' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Typography variant="h4" fontWeight="bold">
-          Administrator Dashboard
-        </Typography>
-        <Chip 
-          label="Admin Only" 
-          size="small" 
-          color="primary"
-          sx={{ 
-            backgroundColor: '#DB0011',
-            color: 'white',
-            fontWeight: 'bold'
-          }}
-        />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h4" fontWeight="bold">
+            Administrator Dashboard
+          </Typography>
+          <Chip 
+            label="Admin Only" 
+            size="small" 
+            color="primary"
+            sx={{ 
+              backgroundColor: '#DB0011',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          />
+        </Box>
+        <Tooltip title="Refresh resolution statistics">
+          <IconButton
+            onClick={() => {
+              setLoading(true);
+              fetchDashboardData();
+            }}
+            disabled={loading}
+            color="primary"
+            sx={{ 
+              backgroundColor: '#f5f5f5',
+              '&:hover': { backgroundColor: '#e0e0e0' }
+            }}
+          >
+            <Refresh />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Typography variant="subtitle1" color="text.secondary" gutterBottom>
         DC AutoAssist System Analytics & Performance Insights
@@ -244,9 +284,14 @@ const DashboardPage: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Top Active Users
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  Top Active Users
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Page {currentPage} • {usersPerPage} users per page
+                </Typography>
+              </Box>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
@@ -257,23 +302,62 @@ const DashboardPage: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {userStats.slice(0, 5).map((user) => (
+                    {userStats.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={user.id === (user as any).id ? 'bold' : 'normal'}>
+                          <Typography variant="body2" fontWeight="500">
                             {user.full_name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {user.department}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right">{user.total_conversations}</TableCell>
-                        <TableCell align="right">{user.queries_resolved}</TableCell>
+                        <TableCell align="right">
+                          <Chip 
+                            label={user.total_conversations} 
+                            size="small" 
+                            sx={{ backgroundColor: '#e3f2fd', color: '#1976d2' }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Chip 
+                            label={user.queries_resolved} 
+                            size="small" 
+                            sx={{ backgroundColor: '#e8f5e8', color: '#388e3c' }}
+                          />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
+              
+              {/* Pagination Controls */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, pt: 2, borderTop: '1px solid #e0e0e0' }}>
+                <Button
+                  startIcon={<NavigateBefore />}
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  size="small"
+                  sx={{ color: '#DB0011' }}
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="caption" color="text.secondary">
+                  Showing {((currentPage - 1) * usersPerPage) + 1} - {Math.min(currentPage * usersPerPage, (currentPage - 1) * usersPerPage + userStats.length)} users
+                </Typography>
+                
+                <Button
+                  endIcon={<NavigateNext />}
+                  onClick={handleNextPage}
+                  disabled={!hasMoreUsers}
+                  size="small"
+                  sx={{ color: '#DB0011' }}
+                >
+                  Next
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         </Grid>

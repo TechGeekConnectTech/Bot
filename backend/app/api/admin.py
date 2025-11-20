@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.chat import ChatConversation, ChatMessage, QueryResolution
+from app.models.chat import ChatConversation, ChatMessage, QueryResolution, ResolutionFeedback
 from app.api.auth import get_current_user, get_admin_user
 
 router = APIRouter()
@@ -70,9 +70,6 @@ async def get_dashboard_stats(
     # Basic counts
     total_users = db.query(User).count()
     total_conversations = db.query(ChatConversation).count()
-    total_queries_resolved = db.query(QueryResolution).filter(
-        QueryResolution.resolved_automatically == True
-    ).count()
     active_conversations = db.query(ChatConversation).filter(
         ChatConversation.status == "active"
     ).count()
@@ -82,23 +79,54 @@ async def get_dashboard_stats(
         func.date(ChatConversation.created_at) == today
     ).count()
     
-    # Common issues (top 5)
+    # Common issues by category (top 5)
+    # First try to get data from resolution feedback (more accurate)
     common_issues_query = db.query(
-        QueryResolution.query_type,
-        func.count(QueryResolution.id).label('count')
-    ).group_by(QueryResolution.query_type).order_by(desc('count')).limit(5).all()
+        ResolutionFeedback.category,
+        func.count(ResolutionFeedback.id).label('count')
+    ).filter(
+        ResolutionFeedback.category.isnot(None)
+    ).group_by(ResolutionFeedback.category).order_by(desc('count')).limit(5).all()
     
-    common_issues = [
-        {"issue_type": issue[0], "count": issue[1]}
-        for issue in common_issues_query
-    ]
+    # If no category data, fall back to query_type
+    if not common_issues_query:
+        common_issues_query = db.query(
+            QueryResolution.query_type,
+            func.count(QueryResolution.id).label('count')
+        ).group_by(QueryResolution.query_type).order_by(desc('count')).limit(5).all()
     
-    # Resolution rate
-    total_queries = db.query(QueryResolution).count()
-    resolved_queries = db.query(QueryResolution).filter(
-        QueryResolution.resolved_automatically == True
+    # Format category names for display
+    category_names = {
+        'general': 'General Questions',
+        'hsbc_internal': 'HSBC Internal Issues', 
+        'monitoring': 'System Monitoring',
+        'knowledge_base': 'Knowledge Base Queries'
+    }
+    
+    common_issues = []
+    for issue in common_issues_query:
+        category_key = issue[0]
+        display_name = category_names.get(category_key, category_key.replace('_', ' ').title() if category_key else 'Other')
+        common_issues.append({"issue_type": display_name, "count": issue[1]})
+    
+    # Resolution rate from user feedback (more accurate than auto-resolved)
+    total_feedback = db.query(ResolutionFeedback).count()
+    resolved_feedback = db.query(ResolutionFeedback).filter(
+        ResolutionFeedback.was_resolved == True
     ).count()
-    resolution_rate = (resolved_queries / total_queries * 100) if total_queries > 0 else 0
+    
+    # If no feedback yet, fall back to old calculation
+    if total_feedback > 0:
+        resolution_rate = (resolved_feedback / total_feedback * 100)
+        total_queries_resolved = resolved_feedback  # Update to use actual user feedback
+    else:
+        # Fallback to old calculation if no feedback data
+        total_queries = db.query(QueryResolution).count()
+        resolved_queries = db.query(QueryResolution).filter(
+            QueryResolution.resolved_automatically == True
+        ).count()
+        resolution_rate = (resolved_queries / total_queries * 100) if total_queries > 0 else 0
+        total_queries_resolved = resolved_queries
     
     return DashboardStats(
         total_users=total_users,
@@ -113,7 +141,9 @@ async def get_dashboard_stats(
 @router.get("/users", response_model=List[UserStats])
 async def get_user_statistics(
     admin_user: User = Depends(require_admin_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    page: int = 1,
+    limit: int = 5
 ):
     users = db.query(User).all()
     user_stats = []
@@ -138,7 +168,14 @@ async def get_user_statistics(
             queries_resolved=queries_resolved
         ))
     
-    return user_stats
+    # Sort by total conversations (most active first)
+    user_stats.sort(key=lambda x: x.total_conversations, reverse=True)
+    
+    # Apply pagination
+    start_index = (page - 1) * limit
+    end_index = start_index + limit
+    
+    return user_stats[start_index:end_index]
 
 @router.get("/incidents", response_model=List[IncidentDetails])
 async def get_all_incidents(
@@ -366,3 +403,96 @@ async def get_conversation_stats(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get conversation stats: {str(e)}")
+
+@router.get("/resolution-analytics")
+async def get_resolution_analytics(
+    admin_user: User = Depends(require_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Get detailed resolution analytics for admin dashboard"""
+    try:
+        # Overall resolution statistics
+        total_feedback = db.query(ResolutionFeedback).count()
+        resolved_feedback = db.query(ResolutionFeedback).filter(
+            ResolutionFeedback.was_resolved == True
+        ).count()
+        
+        resolution_rate = (resolved_feedback / total_feedback * 100) if total_feedback > 0 else 0
+        
+        # Average rating for resolved queries
+        avg_rating_result = db.query(
+            func.avg(ResolutionFeedback.resolution_rating)
+        ).filter(
+            ResolutionFeedback.was_resolved == True,
+            ResolutionFeedback.resolution_rating.isnot(None)
+        ).scalar()
+        
+        avg_rating = round(float(avg_rating_result), 2) if avg_rating_result else None
+        
+        # Resolution by category
+        category_stats = db.query(
+            ResolutionFeedback.category,
+            func.count(ResolutionFeedback.id).label('total'),
+            func.sum(func.cast(ResolutionFeedback.was_resolved, db.Integer)).label('resolved')
+        ).filter(
+            ResolutionFeedback.category.isnot(None)
+        ).group_by(ResolutionFeedback.category).all()
+        
+        resolution_by_category = {}
+        for category, total, resolved in category_stats:
+            rate = (resolved / total * 100) if total > 0 else 0
+            resolution_by_category[category] = {
+                "total": total,
+                "resolved": resolved or 0,
+                "rate": round(rate, 1)
+            }
+        
+        # Resolution by AI service
+        ai_service_stats = db.query(
+            ResolutionFeedback.ai_service_used,
+            func.count(ResolutionFeedback.id).label('total'),
+            func.sum(func.cast(ResolutionFeedback.was_resolved, db.Integer)).label('resolved')
+        ).filter(
+            ResolutionFeedback.ai_service_used.isnot(None)
+        ).group_by(ResolutionFeedback.ai_service_used).all()
+        
+        resolution_by_ai_service = {}
+        for service, total, resolved in ai_service_stats:
+            rate = (resolved / total * 100) if total > 0 else 0
+            resolution_by_ai_service[service] = {
+                "total": total,
+                "resolved": resolved or 0,
+                "rate": round(rate, 1)
+            }
+        
+        # Recent feedback (last 10)
+        recent_feedback = db.query(ResolutionFeedback).join(
+            User, ResolutionFeedback.user_id == User.id
+        ).order_by(ResolutionFeedback.created_at.desc()).limit(10).all()
+        
+        recent_feedback_data = []
+        for feedback in recent_feedback:
+            user = db.query(User).filter(User.id == feedback.user_id).first()
+            recent_feedback_data.append({
+                "id": feedback.id,
+                "was_resolved": feedback.was_resolved,
+                "resolution_rating": feedback.resolution_rating,
+                "feedback_comment": feedback.feedback_comment,
+                "category": feedback.category,
+                "ai_service_used": feedback.ai_service_used,
+                "created_at": feedback.created_at,
+                "username": user.username if user else "Unknown"
+            })
+        
+        return {
+            "total_queries": total_feedback,
+            "resolved_queries": resolved_feedback,
+            "resolution_rate": round(resolution_rate, 2),
+            "average_rating": avg_rating,
+            "resolution_by_category": resolution_by_category,
+            "resolution_by_ai_service": resolution_by_ai_service,
+            "recent_feedback": recent_feedback_data
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get resolution analytics: {str(e)}")

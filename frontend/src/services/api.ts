@@ -112,8 +112,8 @@ class ApiService {
     return response.data;
   }
 
-  async getUserStatistics() {
-    const response = await this.api.get('/api/admin/users');
+  async getUserStatistics(page: number = 1, limit: number = 5) {
+    const response = await this.api.get(`/api/admin/users?page=${page}&limit=${limit}`);
     return response.data;
   }
 
@@ -245,6 +245,31 @@ class ApiService {
       conversation_id: conversationId,
       incident_details: incidentDetails
     });
+    return response.data;
+  }
+
+  // Resolution Feedback
+  async submitResolutionFeedback(conversationId: number, messageId: number, feedbackData: {
+    was_resolved: boolean;
+    resolution_rating?: number;
+    feedback_comment?: string;
+  }) {
+    const response = await this.api.post('/api/chat/resolution-feedback', {
+      conversation_id: conversationId,
+      message_id: messageId,
+      ...feedbackData
+    });
+    return response.data;
+  }
+
+  async getResolutionStats(userId?: number) {
+    const params = userId ? `?user_id=${userId}` : '';
+    const response = await this.api.get(`/api/chat/resolution-stats${params}`);
+    return response.data;
+  }
+
+  async getAdminResolutionAnalytics() {
+    const response = await this.api.get('/api/admin/resolution-analytics');
     return response.data;
   }
 

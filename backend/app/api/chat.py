@@ -6,7 +6,7 @@ from datetime import datetime
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.chat import ChatConversation, ChatMessage, QueryResolution
+from app.models.chat import ChatConversation, ChatMessage, QueryResolution, ResolutionFeedback
 from app.api.auth import get_current_user
 from app.services.gpt_service import GPTService
 from app.services.api_integrations import SplunkService, AnsibleService
@@ -41,6 +41,7 @@ class ConversationResponse(BaseModel):
 class ChatResponse(BaseModel):
     message: str
     conversation_id: int
+    message_id: Optional[int] = None  # Bot message ID for feedback tracking
     suggestions: Optional[List[str]] = None
     data_sources: Optional[List[str]] = None
     incident_required: bool = False
@@ -51,6 +52,35 @@ class ChatResponse(BaseModel):
     incident_created: Optional[bool] = None
     incident_id: Optional[str] = None
     incident_creation_error: Optional[str] = None
+    requires_feedback: bool = True  # Always ask for feedback on bot responses
+
+class ResolutionFeedbackCreate(BaseModel):
+    conversation_id: int
+    message_id: int
+    was_resolved: bool
+    resolution_rating: Optional[int] = None  # 1-5 stars
+    feedback_comment: Optional[str] = None
+
+class ResolutionFeedbackResponse(BaseModel):
+    id: int
+    conversation_id: int
+    message_id: int
+    was_resolved: bool
+    resolution_rating: Optional[int]
+    feedback_comment: Optional[str]
+    response_time: Optional[int]
+    category: Optional[str]
+    ai_service_used: Optional[str]
+    created_at: datetime
+
+class ResolutionStatsResponse(BaseModel):
+    total_queries: int
+    resolved_queries: int
+    resolution_rate: float  # Percentage
+    average_rating: Optional[float]
+    resolution_by_category: dict
+    resolution_by_ai_service: dict
+    recent_feedback: List[ResolutionFeedbackResponse]
 
 class DeleteResponse(BaseModel):
     success: bool
@@ -113,7 +143,8 @@ async def send_message(
         message_content=message_data.message,
         message_metadata={
             "server_name": message_data.server_name,
-            "correlation_id": message_data.correlation_id
+            "correlation_id": message_data.correlation_id,
+            "category": message_data.category
         }
     )
     db.add(user_message)
@@ -142,6 +173,7 @@ async def send_message(
         message=message_data.message,
         server_name=message_data.server_name,
         correlation_id=message_data.correlation_id,
+        category=message_data.category,
         user_context={
             "user_id": current_user.id,
             "department": current_user.department,
@@ -159,6 +191,7 @@ async def send_message(
     )
     db.add(bot_message)
     db.commit()
+    db.refresh(bot_message)  # Get the message ID
     
     # Update conversation timestamp
     conversation.updated_at = datetime.utcnow()
@@ -167,6 +200,7 @@ async def send_message(
     return ChatResponse(
         message=response_data["message"],
         conversation_id=conversation.id,
+        message_id=bot_message.id,  # Include message ID for feedback tracking
         suggestions=response_data.get("suggestions", []),
         data_sources=response_data.get("data_sources", []),
         incident_required=response_data.get("incident_required", False),
@@ -560,4 +594,198 @@ async def get_incident_details_admin(
         created_by_username=user.username if user else "Unknown",
         created_by_full_name=user.full_name if user else "Unknown",
         created_by_department=user.department if user else "Unknown"
+    )
+
+# Resolution Feedback Endpoints
+@router.post("/resolution-feedback", response_model=ResolutionFeedbackResponse)
+async def submit_resolution_feedback(
+    feedback_data: ResolutionFeedbackCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Submit feedback on whether a bot response resolved the user's query
+    """
+    # Add debug logging
+    print(f"🔍 Resolution feedback received: conversation_id={feedback_data.conversation_id}, message_id={feedback_data.message_id}, user_id={current_user.id}")
+    print(f"📝 Feedback data: was_resolved={feedback_data.was_resolved}, rating={feedback_data.resolution_rating}")
+    
+    # Log the current user
+    print(f"👤 Current user: {current_user.username} (ID: {current_user.id})")
+    # Verify the conversation belongs to the user
+    conversation = db.query(ChatConversation).filter(
+        ChatConversation.id == feedback_data.conversation_id,
+        ChatConversation.user_id == current_user.id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Verify the message exists and is a bot message
+    print(f"🔍 Looking for message: ID={feedback_data.message_id}, conversation_id={feedback_data.conversation_id}")
+    
+    # First check if message exists at all
+    any_message = db.query(ChatMessage).filter(ChatMessage.id == feedback_data.message_id).first()
+    if any_message:
+        print(f"✅ Message {feedback_data.message_id} exists: sender_type={any_message.sender_type}, conversation_id={any_message.conversation_id}")
+    else:
+        print(f"❌ Message {feedback_data.message_id} does not exist in database")
+    
+    # Now check with all filters
+    message = db.query(ChatMessage).filter(
+        ChatMessage.id == feedback_data.message_id,
+        ChatMessage.conversation_id == feedback_data.conversation_id,
+        ChatMessage.sender_type == "bot"
+    ).first()
+    
+    if not message:
+        # More detailed error message
+        error_details = f"Bot message not found. Message ID: {feedback_data.message_id}, Conversation ID: {feedback_data.conversation_id}"
+        if any_message:
+            error_details += f". Message exists but: sender_type='{any_message.sender_type}', actual_conversation_id={any_message.conversation_id}"
+        print(f"❌ {error_details}")
+        raise HTTPException(status_code=404, detail=error_details)
+    
+    # Check if feedback already exists for this message
+    existing_feedback = db.query(ResolutionFeedback).filter(
+        ResolutionFeedback.message_id == feedback_data.message_id,
+        ResolutionFeedback.user_id == current_user.id
+    ).first()
+    
+    if existing_feedback:
+        # Update existing feedback
+        existing_feedback.was_resolved = feedback_data.was_resolved
+        existing_feedback.resolution_rating = feedback_data.resolution_rating
+        existing_feedback.feedback_comment = feedback_data.feedback_comment
+        db.commit()
+        db.refresh(existing_feedback)
+        
+        feedback_obj = existing_feedback
+    else:
+        # Calculate response time (time between bot message and feedback)
+        response_time = int((datetime.utcnow() - message.timestamp).total_seconds())
+        
+        # Get AI service used from message metadata
+        ai_service_used = message.message_metadata.get("ai_service_used") if message.message_metadata else None
+        
+        # Get category from message metadata or conversation context
+        category = message.message_metadata.get("category") if message.message_metadata else None
+        
+        # Create new feedback
+        feedback_obj = ResolutionFeedback(
+            conversation_id=feedback_data.conversation_id,
+            message_id=feedback_data.message_id,
+            user_id=current_user.id,
+            was_resolved=feedback_data.was_resolved,
+            resolution_rating=feedback_data.resolution_rating,
+            feedback_comment=feedback_data.feedback_comment,
+            response_time=response_time,
+            category=category,
+            ai_service_used=ai_service_used
+        )
+        
+        db.add(feedback_obj)
+        db.commit()
+        db.refresh(feedback_obj)
+    
+    # If query was resolved, update conversation status
+    if feedback_data.was_resolved:
+        conversation.status = "resolved"
+        conversation.resolved_at = datetime.utcnow()
+        db.commit()
+    
+    return ResolutionFeedbackResponse(
+        id=feedback_obj.id,
+        conversation_id=feedback_obj.conversation_id,
+        message_id=feedback_obj.message_id,
+        was_resolved=feedback_obj.was_resolved,
+        resolution_rating=feedback_obj.resolution_rating,
+        feedback_comment=feedback_obj.feedback_comment,
+        response_time=feedback_obj.response_time,
+        category=feedback_obj.category,
+        ai_service_used=feedback_obj.ai_service_used,
+        created_at=feedback_obj.created_at
+    )
+
+@router.get("/resolution-stats", response_model=ResolutionStatsResponse)
+async def get_resolution_statistics(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    user_id: Optional[int] = None  # For admin to view specific user stats
+):
+    """
+    Get resolution statistics and rates
+    """
+    # Base query - admin can view all stats, users can only see their own
+    if current_user.role == "admin" and user_id:
+        # Admin viewing specific user stats
+        feedback_query = db.query(ResolutionFeedback).filter(ResolutionFeedback.user_id == user_id)
+    elif current_user.role == "admin" and not user_id:
+        # Admin viewing all stats
+        feedback_query = db.query(ResolutionFeedback)
+    else:
+        # Regular user viewing their own stats
+        feedback_query = db.query(ResolutionFeedback).filter(ResolutionFeedback.user_id == current_user.id)
+    
+    # Get all feedback records
+    all_feedback = feedback_query.all()
+    
+    # Calculate basic stats
+    total_queries = len(all_feedback)
+    resolved_queries = len([f for f in all_feedback if f.was_resolved])
+    resolution_rate = (resolved_queries / total_queries * 100) if total_queries > 0 else 0.0
+    
+    # Calculate average rating (only from resolved queries with ratings)
+    rated_feedback = [f for f in all_feedback if f.was_resolved and f.resolution_rating]
+    average_rating = sum(f.resolution_rating for f in rated_feedback) / len(rated_feedback) if rated_feedback else None
+    
+    # Resolution by category
+    resolution_by_category = {}
+    categories = set(f.category for f in all_feedback if f.category)
+    for category in categories:
+        category_feedback = [f for f in all_feedback if f.category == category]
+        category_resolved = [f for f in category_feedback if f.was_resolved]
+        resolution_by_category[category] = {
+            "total": len(category_feedback),
+            "resolved": len(category_resolved),
+            "rate": (len(category_resolved) / len(category_feedback) * 100) if category_feedback else 0
+        }
+    
+    # Resolution by AI service
+    resolution_by_ai_service = {}
+    ai_services = set(f.ai_service_used for f in all_feedback if f.ai_service_used)
+    for service in ai_services:
+        service_feedback = [f for f in all_feedback if f.ai_service_used == service]
+        service_resolved = [f for f in service_feedback if f.was_resolved]
+        resolution_by_ai_service[service] = {
+            "total": len(service_feedback),
+            "resolved": len(service_resolved),
+            "rate": (len(service_resolved) / len(service_feedback) * 100) if service_feedback else 0
+        }
+    
+    # Get recent feedback (last 10)
+    recent_feedback = feedback_query.order_by(ResolutionFeedback.created_at.desc()).limit(10).all()
+    recent_feedback_response = [
+        ResolutionFeedbackResponse(
+            id=f.id,
+            conversation_id=f.conversation_id,
+            message_id=f.message_id,
+            was_resolved=f.was_resolved,
+            resolution_rating=f.resolution_rating,
+            feedback_comment=f.feedback_comment,
+            response_time=f.response_time,
+            category=f.category,
+            ai_service_used=f.ai_service_used,
+            created_at=f.created_at
+        ) for f in recent_feedback
+    ]
+    
+    return ResolutionStatsResponse(
+        total_queries=total_queries,
+        resolved_queries=resolved_queries,
+        resolution_rate=round(resolution_rate, 2),
+        average_rating=round(average_rating, 2) if average_rating else None,
+        resolution_by_category=resolution_by_category,
+        resolution_by_ai_service=resolution_by_ai_service,
+        recent_feedback=recent_feedback_response
     )

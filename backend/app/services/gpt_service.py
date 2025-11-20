@@ -44,7 +44,12 @@ class GPTService:
             # Handle category-based routing first (highest priority)
             if category:
                 logger.info(f"✅ Category provided: '{category}' - routing to category handler")
-                return await self._handle_category_based_query(message, category, server_name, correlation_id, user_context)
+                response = await self._handle_category_based_query(message, category, server_name, correlation_id, user_context)
+                # Ensure category is in metadata
+                if 'metadata' not in response:
+                    response['metadata'] = {}
+                response['metadata']['category'] = category
+                return response
             
             # Quick check for simple greetings and casual messages (only non-educational ones)
             simple_response = self._handle_simple_messages(message, user_context, category_provided=False)
@@ -118,6 +123,11 @@ class GPTService:
                     message, knowledge_results, user_context, processing_updates
                 )
                 response['processing_updates'] = processing_updates
+                # Add category to metadata if provided
+                if category:
+                    if 'metadata' not in response:
+                        response['metadata'] = {}
+                    response['metadata']['category'] = category
                 return response
             elif knowledge_results.get('common_error_guidance'):
                 processing_updates.append("📚 Found general guidance for this error code")
@@ -127,6 +137,11 @@ class GPTService:
                     message, knowledge_results['common_error_guidance'], user_context, processing_updates
                 )
                 response['processing_updates'] = processing_updates
+                # Add category to metadata if provided
+                if category:
+                    if 'metadata' not in response:
+                        response['metadata'] = {}
+                    response['metadata']['category'] = category
                 return response
             else:
                 processing_updates.append("❌ No exact match found in knowledge base")
@@ -150,6 +165,11 @@ class GPTService:
                             message, similar_issues, user_context, processing_updates, server_name
                         )
                         response['processing_updates'] = processing_updates
+                        # Add category to metadata if provided
+                        if category:
+                            if 'metadata' not in response:
+                                response['metadata'] = {}
+                            response['metadata']['category'] = category
                         return response
             
             # Step 2: If no CSV match, proceed with real-time analysis
@@ -212,6 +232,11 @@ class GPTService:
             response = await self._generate_ai_response(
                 message, query_analysis, external_data, user_context, knowledge_results.get('similar_issues', [])
             )
+            # Ensure category is in metadata if provided
+            if category:
+                if 'metadata' not in response:
+                    response['metadata'] = {}
+                response['metadata']['category'] = category
             
             # Step 5: Save new issue to knowledge base for future reference
             # Only save technical issues, not general information questions
@@ -1961,17 +1986,29 @@ Be specific, actionable, and professional."""
         elif category == "hsbc_internal":
             logger.info("🏦 Processing as HSBC Internal Issue - starting enhanced LLM analysis")
             # HSBC-specific server/API issues - search knowledge base + external APIs
-            return await self._handle_hsbc_internal_issue(message, server_name, correlation_id, user_context)
+            response = await self._handle_hsbc_internal_issue(message, server_name, correlation_id, user_context)
+            if 'metadata' not in response:
+                response['metadata'] = {}
+            response['metadata']['category'] = category
+            return response
         
         elif category == "monitoring":
             logger.info("📊 Processing as System Monitoring Query")
             # System monitoring - focus on Splunk, Ansible, performance data
-            return await self._handle_monitoring_query(message, server_name, correlation_id, user_context)
+            response = await self._handle_monitoring_query(message, server_name, correlation_id, user_context)
+            if 'metadata' not in response:
+                response['metadata'] = {}
+            response['metadata']['category'] = category
+            return response
         
         elif category == "knowledge_base":
             logger.info("📖 Processing as Knowledge Base Query")
             # Internal knowledge - Confluence, procedures, documentation
-            return await self._handle_knowledge_base_query(message, user_context)
+            response = await self._handle_knowledge_base_query(message, user_context)
+            if 'metadata' not in response:
+                response['metadata'] = {}
+            response['metadata']['category'] = category
+            return response
         
         else:
             logger.warning(f"⚠️ Unknown category '{category}' - falling back to standard processing")
@@ -2874,7 +2911,7 @@ Be specific, actionable, and professional."""
     
     async def _create_incident_if_required(self, response_data: Dict[str, Any], conversation_id: Optional[int], 
                                          message: str, server_name: Optional[str], correlation_id: Optional[str],
-                                         user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                                         category: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Create incident record if required by the response
         """

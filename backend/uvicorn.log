@@ -1,0 +1,28 @@
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/root/Bot/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [204610] using WatchFiles
+2025-11-20 04:13:50,906 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2025-11-20 04:13:50,906 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,907 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2025-11-20 04:13:50,907 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,908 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2025-11-20 04:13:50,908 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,911 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-11-20 04:13:50,911 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`users`
+2025-11-20 04:13:50,911 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,914 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_conversations`
+2025-11-20 04:13:50,915 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,916 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`chat_messages`
+2025-11-20 04:13:50,916 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,917 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`query_resolutions`
+2025-11-20 04:13:50,917 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,918 INFO sqlalchemy.engine.Engine DESCRIBE `hsbc_autoassist`.`resolution_feedback`
+2025-11-20 04:13:50,918 INFO sqlalchemy.engine.Engine [raw sql] {}
+2025-11-20 04:13:50,920 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [204613]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:48226 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38674 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44668 - "GET /api/admin/dashboard HTTP/1.1" 401 Unauthorized

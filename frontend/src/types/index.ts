@@ -40,6 +40,7 @@ export interface ChatConversation {
 export interface ChatResponse {
   message: string;
   conversation_id: number;
+  message_id?: number; // Backend message ID for resolution feedback tracking
   suggestions?: string[];
   data_sources?: string[];
   incident_required: boolean;
